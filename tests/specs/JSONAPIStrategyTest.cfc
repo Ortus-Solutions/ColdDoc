@@ -48,7 +48,7 @@ component extends="testbox.system.BaseSpec" {
 						}
 					);
 					testDocBox.generate(
-						source   = "bla",
+						source   = "missingsource",
 						mapping  = "tests",
 						excludes = "(coldbox|build\-docbox)"
 					);

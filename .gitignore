@@ -26,3 +26,4 @@ tests/tmp/
 .artifacts/*
 .tmp/*
 changelog-latest.md
+missingsource

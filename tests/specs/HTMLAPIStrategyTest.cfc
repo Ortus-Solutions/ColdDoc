@@ -35,8 +35,7 @@ component extends="testbox.system.BaseSpec" {
 				);
 			} );
 
-			// TODO: Implement
-			xit( "throws exception when source does not exist", function() {
+			it( "throws exception when source does not exist", function() {
 				expect( function(){
 					var testDocBox = new docbox.DocBox(
 						strategy   = "docbox.strategy.api.HTMLAPIStrategy",
@@ -46,7 +45,7 @@ component extends="testbox.system.BaseSpec" {
 						}
 					);
 					testDocBox.generate(
-						source   = "/bla",
+						source   = "/missingsource",
 						mapping  = "tests",
 						excludes = "(coldbox|build\-docbox)"
 					);
