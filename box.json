@@ -21,7 +21,8 @@
         }
     ],
     "contributors":[
-        "Brad Wood <brad@bradwood.com>"
+        "Brad Wood <brad@bradwood.com>",
+        "Michael Born <michael@ortussolutions.com>"
     ],
     "dependencies":{},
     "devDependencies":{
