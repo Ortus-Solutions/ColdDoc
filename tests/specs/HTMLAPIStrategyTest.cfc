@@ -92,8 +92,35 @@ component extends="testbox.system.BaseSpec" {
 					"should generate #testFile# to document HTMLAPIStrategyTest.cfc"
 				);
 			} );
+
+			it( "allows HTML in docblocks", function() {
+				variables.docbox.generate(
+					source   = expandPath( "/tests" ),
+					mapping  = "tests",
+					excludes = "(coldbox|build\-docbox)"
+				);
+
+				var testFile = variables.testOutputDir & "/tests/specs/HTMLAPIStrategyTest.html";
+				expect( fileExists( testFile ) ).toBeTrue();
+
+				var fileContents = fileRead( testFile );
+
+				expect( fileContents ).toInclude( "<code>#chr(10)#testHTML( 'foo' )#chr(10)#</code>" );
+			})
 		} );
 	}
 
+	/**
+	 * Test for allowing HTML in docblocks
+	 * <p>
+	 * This tests that docbox allows and includes docblock HTML in the generated documentation.
+	 * <p>
+	 * For example:
+	 * <p>
+	 * <code>
+	 * 	testHTML( 'foo' )
+	 * </code>
+	 */
+	function testHTML(){}
 }
 

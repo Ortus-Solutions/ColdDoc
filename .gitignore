@@ -27,3 +27,4 @@ tests/tmp/
 .tmp/*
 changelog-latest.md
 missingsource
+tests/FunkyComponent.cfc

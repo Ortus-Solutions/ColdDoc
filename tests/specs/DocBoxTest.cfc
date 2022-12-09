@@ -40,6 +40,10 @@ component extends="testbox.system.BaseSpec" {
 				resetTmpDirectory( variables.HTMLOutputDir );
 				resetTmpDirectory( variables.JSONOutputDir );
 
+				if ( fileExists( expandPath( "/tests/FunkyComponent.cfc" ) ) ){
+					fileDelete( expandPath( "/tests/FunkyComponent.cfc" ) );
+				}
+
 				variables.docbox = new docbox.DocBox();
 			} );
 
@@ -168,6 +172,52 @@ component extends="testbox.system.BaseSpec" {
 					"should generate overview-summary.json class index file"
 				);
 			} );
+
+			/**
+			 * Skipped until we implement a throwOnError=true.
+			 * Until we can catch the thrown errors, there's nothing much to test here.
+			 */
+			it( "throws on invalid component if throwOnError=true", function() {
+				var componentCode = "componentxyz{}";
+				if ( !fileExists( expandPath( "/tests/FunkyComponent.cfc" ) ) ){
+					fileWrite( expandPath( "/tests/FunkyComponent.cfc" ), componentCode );
+				}
+				expect( function(){
+					variables.docbox.init(
+						properties = {
+							projectTitle = "Test",
+							outputDir = variables.HTMLOutputDir
+						}
+					)
+					.generate(
+						source       = expandPath( "/tests" ),
+						mapping      = "tests",
+						excludes     = "(coldbox|build\-docbox)",
+						throwOnError = true
+					);
+				}).toThrow( "InvalidComponentException" );
+			});
+
+			it( "does not throw on invalid component if throwOnError=false", function() {
+				var componentCode = "componentxyz{}";
+				if ( !fileExists( expandPath( "/tests/FunkyComponent.cfc" ) ) ){
+					fileWrite( expandPath( "/tests/FunkyComponent.cfc" ), componentCode );
+				}
+				expect( function(){
+					variables.docbox.init(
+						properties = {
+							projectTitle = "Test",
+							outputDir = variables.HTMLOutputDir
+						}
+					)
+					.generate(
+						source       = expandPath( "/tests" ),
+						mapping      = "tests",
+						excludes     = "(coldbox|build\-docbox)",
+						throwOnError = false
+					);
+				}).notToThrow( "InvalidComponentException" );
+			});
 		} );
 	}
 

@@ -37,6 +37,11 @@ component accessors="true" {
 	property name="outputDir" type = "string" default="";
 
 	/**
+	 * Throw an error and halt the generation process if DocBox encounters an invalid component.
+	 */
+	property name="throwOnError" type="boolean" default="false";
+
+	/**
 	 * The strategy to use for document generation. Must extend docbox.strategy.AbstractTemplateStrategy
 	 */
 	property
@@ -107,6 +112,11 @@ component accessors="true" {
 		return this;
 	}
 
+	DocBox function throwOnError( boolean throwOnError = true ){
+		setThrowOnError( arguments.throwOnError );
+		return this;
+	}
+
 	/**
 	 * Backwards-compatible setter to add a strategy to the docbox configuration.
 	 *
@@ -138,6 +148,9 @@ component accessors="true" {
 		if ( isSimpleValue( newStrategy ) ) {
 			// Discover the strategy
 			switch ( uCase( arguments.strategy ) ) {
+				case "CommandBox":
+					arguments.strategy = "docbox.strategy.CommandBox.CommandBoxStrategy";
+					break;
 				case "HTML":
 				case "HTMLAPISTRATEGY":
 					arguments.strategy = "docbox.strategy.api.HTMLAPIStrategy";
@@ -186,21 +199,27 @@ component accessors="true" {
 	 * @source Either, the string directory source, OR an array of structs containing 'dir' and 'mapping' key
 	 * @mapping The base mapping for the folder. Only required if the source is a string
 	 * @excludes	A regex that will be applied to the input source to exclude from the docs
+	 * @throwOnError Throw an error and halt the generation process if DocBox encounters an invalid component.
 	 *
 	 * @return The DocBox instance
 	 */
 	DocBox function generate(
 		required source,
 		string mapping  = "",
-		string excludes = ""
+		string excludes = "",
+		boolean throwOnError = false
 	){
-		// handle source args for backwards compat
-		src( source = arguments.source, mapping = arguments.mapping );
+		return this
+			// handle source args for backwards compat
+			.src( source = arguments.source, mapping = arguments.mapping )
 
-		// handle excludes for backwards compat
-		exclude( exclude = arguments.excludes );
+			// handle excludes for backwards compat
+			.exclude( exclude = arguments.excludes )
 
-		return run();
+			// handle throwOnError for backwards compat
+			.throwOnError( arguments.throwOnError )
+
+			.run();
 	}
 
 	/************************************ PRIVATE ******************************************/
@@ -318,12 +337,21 @@ component accessors="true" {
 						querySetCell( metadata, "extends", "-" );
 					}
 				} catch ( Any e ) {
-					trace(
-						type     = "warning",
-						category = "docbox",
-						inline   = "true",
-						text     = "Warning! The following script has errors: " & packagePath & "." & cfcName & ": #e.message & e.detail & e.stacktrace#"
-					);
+					if ( getThrowOnError() ){
+						throw(
+							type = "InvalidComponentException",
+							message = e.message,
+							detail = e.detail,
+							extendedInfo = serializeJSON( e )
+						);
+					} else {
+						trace(
+							type     = "warning",
+							category = "docbox",
+							inline   = "true",
+							text     = "Warning! The following script has errors: " & packagePath & "." & cfcName & ": #e.message & e.detail & e.stacktrace#"
+						);
+					}
 					if ( structKeyExists( server, "lucee" ) ) {
 						systemOutput(
 							"Warning! The following script has errors: " & packagePath & "." & cfcName,
