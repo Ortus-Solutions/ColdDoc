@@ -10,6 +10,33 @@
 component accessors="true" {
 
 	/**
+	 * Array of structs pointing to source code with mapping names.
+	 * 
+	 * For example:
+	 * 
+	 * [
+	 * 	{
+	 * 		"dir" : "/var/www/html/myProject",
+	 * 		"mapping" : "myProject"
+	 * 	}
+	 * ]
+	 */
+	property name="sources" type = "array";
+
+	/**
+	 * Array of regex patterns to exclude from source inputs.
+	 * Files matching any of these patterns will be removed from the source inputs.
+	 * 
+	 * For example: [ "coldbox|testbox", "docbox" ]
+	 */
+	property name="excludes" type = "array";
+
+	/**
+	 * String pointing where the generated output should be saved to disk.
+	 */
+	property name="outputDir" type = "string" default="";
+
+	/**
 	 * The strategy to use for document generation. Must extend docbox.strategy.AbstractTemplateStrategy
 	 */
 	property
@@ -29,6 +56,8 @@ component accessors="true" {
 		any strategy      = "",
 		struct properties = {}
 	){
+		variables.sources	 = [];
+		variables.excludes	 = [];
 		variables.strategies = [];
 		variables.properties = arguments.properties;
 
@@ -40,6 +69,41 @@ component accessors="true" {
 			);
 		}
 
+		return this;
+	}
+
+	/**
+	 * Add a source path (and optional mapping) to the configured source list.
+	 * 
+	 * @source
+	 * @mapping A string name to use when mapping the source code. Specify this if the directory name doesn't match the reference name. For example, `extends="docbox.Docbox"` could use a `docbox` mapping to point to `/libs/docboxSrc/`.
+	 */
+	DocBox function src( required any source, string mapping = "" ){
+		if ( isSimpleValue( arguments.source ) ) {
+			variables.sources.append(
+				{
+					"dir"     : arguments.source,
+					"mapping" : arguments.mapping
+				}
+			);
+		} else {
+			variables.sources.append( arguments.source );
+		}
+		return this;
+	}
+
+	/**
+	 * Append a regex partial to exclude file paths from docs generation.
+	 *
+	 * @exclude	A regex that will be applied to the input source to exclude from the docs
+	 */
+	DocBox function exclude( required string exclude ){
+		variables.excludes.append( arguments.exclude );
+		return this;
+	}
+
+	DocBox function outputDir( required string outputDir ){
+		variables.outputDir = arguments.outputDir;
 		return this;
 	}
 
@@ -97,7 +161,27 @@ component accessors="true" {
 	}
 
 	/**
+	 * Fluent-style method to kick off a new documentation run.
+	 */
+	DocBox function run(){
+		// verify we have at least one strategy defined, if not, auto add the HTML strategy
+		if ( isNull( getStrategies() ) || !getStrategies().len() ) {
+			this.addStrategy( strategy : "HTML", properties : variables.properties );
+		}
+
+		// build metadata collection
+		var metadata = buildMetaDataCollection();
+
+		getStrategies().each( function( strategy ){
+			strategy.run( metadata );
+		} );
+		return this;
+	}
+
+	/**
 	 * Generate the docs
+	 * 
+	 * !Deprecated! Please use the new run() method and related fluent syntax.
 	 *
 	 * @source Either, the string directory source, OR an array of structs containing 'dir' and 'mapping' key
 	 * @mapping The base mapping for the folder. Only required if the source is a string
@@ -110,32 +194,13 @@ component accessors="true" {
 		string mapping  = "",
 		string excludes = ""
 	){
-		// verify we have at least one strategy defined, if not, auto add the HTML strategy
-		if ( isNull( getStrategies() ) || !getStrategies().len() ) {
-			this.addStrategy( strategy : "HTML", properties : variables.properties );
-		}
+		// handle source args for backwards compat
+		src( source = arguments.source, mapping = arguments.mapping );
 
-		// inflate the incoming input and mappings
-		var thisSource = "";
-		if ( isSimpleValue( arguments.source ) ) {
-			thisSource = [
-				{
-					dir     : arguments.source,
-					mapping : arguments.mapping
-				}
-			];
-		} else {
-			thisSource = arguments.source;
-		}
+		// handle excludes for backwards compat
+		exclude( exclude = arguments.excludes );
 
-		// build metadata collection
-		var metadata = buildMetaDataCollection( thisSource, arguments.excludes );
-
-		getStrategies().each( function( strategy ){
-			strategy.run( metadata );
-		} );
-
-		return this;
+		return run();
 	}
 
 	/************************************ PRIVATE ******************************************/
@@ -159,42 +224,35 @@ component accessors="true" {
 
 	/**
 	 * Builds the searchable meta data collection
-	 *
-	 * @inputSource an array of structs containing inputDir and mapping
-	 * @excludes	A regex that will be applied to the input source to exclude from the docs
 	 */
-	query function buildMetaDataCollection(
-		required array inputSource,
-		string excludes = ""
-	){
+	query function buildMetaDataCollection(){
 		var metadata = queryNew( "package,name,extends,metadata,type,implements,fullextends,currentMapping" );
 
 		// iterate over input sources
-		for ( var thisInput in arguments.inputSource ) {
-			if ( !directoryExists( thisInput.dir ) ){
+		for ( var source in getSources() ) {
+			if ( !directoryExists( source.dir ) ){
 				throw(
 					message = "Invalid configuration; source directory not found",
 					type = "InvalidConfigurationException",
-					detail ="Configured source #thisInput.dir# does not exist."
+					detail ="Configured source #source.dir# does not exist."
 				);
 			}
-			var aFiles = directoryList( thisInput.dir, true, "path", "*.cfc" );
+			var aFiles = directoryList( source.dir, true, "path", "*.cfc" );
 
-			// iterate over files found
-			for ( var thisFile in aFiles ) {
-				// Excludes?
+			aFiles
+			.filter(function( thisFile ){
 				// Use relative file path so placement on disk doesn't affect the regex check
-				var relativeFilePath = replace( thisFile, thisInput.dir, "" );
-				if ( len( arguments.excludes ) && reFindNoCase( arguments.excludes, relativeFilePath ) ) {
-					continue;
-				}
+				var relativeFilePath = replace( thisFile, source.dir, "" );
+				return !getExcludes().len() ||
+						getExcludes().some( ( exclude ) => reFindNoCase( exclude, relativeFilePath ) );
+			}).each(function( thisFile ){
 				// get current path
-				var currentPath = cleanPath( thisFile, thisInput.dir );
+				var currentPath = cleanPath( thisFile, source.dir );
 
 				// calculate package path according to mapping
-				var packagePath = thisInput.mapping;
+				var packagePath = source.mapping;
 				if ( len( currentPath ) ) {
-					packagePath = listAppend( thisInput.mapping, currentPath, "." );
+					packagePath = listAppend( source.mapping, currentPath, "." );
 				}
 				// setup cfc name
 				var cfcName = listFirst( getFileFromPath( thisFile ), "." );
@@ -228,7 +286,7 @@ component accessors="true" {
 					querySetCell(
 						metadata,
 						"currentMapping",
-						thisInput.mapping
+						source.mapping
 					);
 
 					// Get implements
@@ -275,7 +333,7 @@ component accessors="true" {
 						systemOutput( e.stackTrace );
 					}
 				}
-			}
+			});
 			// end qFiles iteration
 		}
 		// end input source iteration

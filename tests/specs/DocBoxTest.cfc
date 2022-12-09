@@ -13,7 +13,28 @@ component extends="testbox.system.BaseSpec" {
 
 	function run( testResults, testBox ){
 		// all your suites go here.
-		describe( "DocBox", function(){
+		describe( "DocBox v4", function(){
+			beforeEach( function(){
+				resetTmpDirectory( getDirectoryFromPath( variables.XMIOutputFile ) );
+				resetTmpDirectory( variables.HTMLOutputDir );
+				resetTmpDirectory( variables.JSONOutputDir );
+			} );
+			it( "supports fluent functional syntax", function(){
+				new Docbox()
+					.src( expandPath( "/tests" ) )
+					.exclude( "coldbox" )
+					.exclude( "build")
+					.outputDir( variables.HTMLOutputDir )
+					// .theme( "ninja", {
+					// 	footer : "",
+					// 	logo : "",
+					// 	title : "",
+					// 	primaryColor : ""
+					// } )
+					.run();
+			} );
+		})
+		describe( "DocBox Traditional", function(){
 			beforeEach( function(){
 				resetTmpDirectory( getDirectoryFromPath( variables.XMIOutputFile ) );
 				resetTmpDirectory( variables.HTMLOutputDir );
