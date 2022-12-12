@@ -1,7 +1,7 @@
 /**
  * My BDD Test
  */
-component extends="testbox.system.BaseSpec" {
+component extends="testbox.system.BaseSpec" labels="strategy" {
 
 	variables.testOutputFile = expandPath( "/tests/tmp/XMITestFile.uml" );
 

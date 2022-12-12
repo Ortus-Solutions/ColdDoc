@@ -1,7 +1,7 @@
 /**
  * Test the main DocBox model
  */
-component extends="testbox.system.BaseSpec" {
+component extends="testbox.system.BaseSpec" labels="core" {
 
 	variables.HTMLOutputDir = expandPath( "/tests/tmp/html" );
 	variables.JSONOutputDir = expandPath( "/tests/tmp/json" );
