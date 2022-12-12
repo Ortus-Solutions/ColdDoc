@@ -25,7 +25,7 @@ component extends="testbox.system.BaseSpec" labels="core" {
 					.exclude( "coldbox" )
 					.exclude( "build")
 					.outputDir( variables.HTMLOutputDir )
-					.withLogging()
+					.withFileLogging()
 					.throwOnError()
 					// .theme( "ninja", {
 					// 	footer : "",
