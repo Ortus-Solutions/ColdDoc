@@ -21,10 +21,12 @@ component extends="testbox.system.BaseSpec" {
 			} );
 			it( "supports fluent functional syntax", function(){
 				new Docbox()
-					.src( expandPath( "/tests" ) )
+					.src( expandPath( "/tests/specs" ) )
 					.exclude( "coldbox" )
 					.exclude( "build")
 					.outputDir( variables.HTMLOutputDir )
+					.withLogging()
+					.throwOnError()
 					// .theme( "ninja", {
 					// 	footer : "",
 					// 	logo : "",
@@ -173,10 +175,6 @@ component extends="testbox.system.BaseSpec" {
 				);
 			} );
 
-			/**
-			 * Skipped until we implement a throwOnError=true.
-			 * Until we can catch the thrown errors, there's nothing much to test here.
-			 */
 			it( "throws on invalid component if throwOnError=true", function() {
 				var componentCode = "componentxyz{}";
 				if ( !fileExists( expandPath( "/tests/FunkyComponent.cfc" ) ) ){

@@ -42,6 +42,11 @@ component accessors="true" {
 	property name="throwOnError" type="boolean" default="false";
 
 	/**
+	 * Turn on debug logs, off by default.
+	 */
+	property name="loggingEnabled" type="boolean" default="false";
+
+	/**
 	 * The strategy to use for document generation. Must extend docbox.strategy.AbstractTemplateStrategy
 	 */
 	property
@@ -88,7 +93,7 @@ component accessors="true" {
 			variables.sources.append(
 				{
 					"dir"     : arguments.source,
-					"mapping" : arguments.mapping
+					"mapping" : len( arguments.mapping ) ? arguments.mapping : reReplace( arguments.source, "/", ".", "all" )
 				}
 			);
 		} else {
@@ -107,13 +112,33 @@ component accessors="true" {
 		return this;
 	}
 
+	/**
+	 * Set the disk location of the generated documentation.
+	 *
+	 * @outputDir Full (expanded) path to the desired location of the generated docs.
+	 */
 	DocBox function outputDir( required string outputDir ){
 		variables.outputDir = arguments.outputDir;
 		return this;
 	}
 
+	/**
+	 * Enable throwing an error upon encountering an invalid source file.
+	 * 
+	 * @throwOnError Omit or pass 'true' to enable throwing.
+	 */
 	DocBox function throwOnError( boolean throwOnError = true ){
 		setThrowOnError( arguments.throwOnError );
+		return this;
+	}
+
+	/**
+	 * Output logging to the server console (System.Out) for each file INcluded or EXcluded in the documentation.
+	 *
+	 * @loggingEnabled True to enable, false to disable. Calling this method with no parameter will turn ON debugging.
+	 */
+	DocBox function withFileLogging( boolean loggingEnabled = true ){
+		setLoggingEnabled( arguments.loggingEnabled );
 		return this;
 	}
 
@@ -166,10 +191,11 @@ component accessors="true" {
 				default:
 					break;
 			}
-			// Build it out
-			newStrategy = new "#arguments.strategy#"( argumentCollection = arguments.properties );
 		}
-		setStrategies( getStrategies().append( newStrategy ) );
+		setStrategies( getStrategies().append( {
+			strategy  : arguments.strategy,
+			properties: arguments.properties
+		} ) );
 		return this;
 	}
 
@@ -186,7 +212,12 @@ component accessors="true" {
 		var metadata = buildMetaDataCollection();
 
 		getStrategies().each( function( strategy ){
-			strategy.run( metadata );
+			param strategy.properties.outputDir = getOutputDir();
+			if ( isSimpleValue( strategy.strategy ) ){
+				new "#strategy.strategy#"( argumentCollection = strategy.properties ).run( metadata );
+			} else {
+				strategy.strategy.run( metadata );
+			}
 		} );
 		return this;
 	}
@@ -256,15 +287,24 @@ component accessors="true" {
 					detail ="Configured source #source.dir# does not exist."
 				);
 			}
-			var aFiles = directoryList( source.dir, true, "path", "*.cfc" );
-
-			aFiles
+			directoryList( source.dir, true, "path", "*.cfc" )
 			.filter(function( thisFile ){
 				// Use relative file path so placement on disk doesn't affect the regex check
 				var relativeFilePath = replace( thisFile, source.dir, "" );
-				return !getExcludes().len() ||
-						getExcludes().some( ( exclude ) => reFindNoCase( exclude, relativeFilePath ) );
+				var excluded = getExcludes().len() && getExcludes().some( ( exclude ) => {
+					if ( getLoggingEnabled() && reFindNoCase( exclude, relativeFilePath ) ){
+						writeDump( var = "Skipping file #relativeFilePath# based on exclusion: #exclude#", output = "console" );
+					}
+					return reFindNoCase( exclude, relativeFilePath );
+				});
+
+				// Core Excludes, don't document the Application.cfc
+				var isApplicationCFC = listFirst( getFileFromPath( relativeFilePath ), "." ) == "Application";
+				return !excluded && !isApplicationCFC;
 			}).each(function( thisFile ){
+				if ( getLoggingEnabled() ){
+					writeDump( var = "pulling docs for #thisFile#", output = "console" );
+				}
 				// get current path
 				var currentPath = cleanPath( thisFile, source.dir );
 
@@ -275,11 +315,6 @@ component accessors="true" {
 				}
 				// setup cfc name
 				var cfcName = listFirst( getFileFromPath( thisFile ), "." );
-
-				// Core Excludes, don't document the Application.cfc
-				if ( cfcName == "Application" ) {
-					continue;
-				}
 
 				try {
 					// Get component metadatata
@@ -318,7 +353,7 @@ component accessors="true" {
 					fullextends     = listQualify( arrayToList( fullextends ), ":" );
 					querySetCell( metadata, "fullextends", fullextends );
 
-					// so we cane easily query direct desendents
+					// so we can easily query direct descendants
 					if ( structKeyExists( meta, "extends" ) ) {
 						if ( meta.type eq "interface" ) {
 							querySetCell(
@@ -339,9 +374,9 @@ component accessors="true" {
 				} catch ( Any e ) {
 					if ( getThrowOnError() ){
 						throw(
-							type = "InvalidComponentException",
-							message = e.message,
-							detail = e.detail,
+							type         = "InvalidComponentException",
+							message      = e.message,
+							detail       = e.detail,
 							extendedInfo = serializeJSON( e )
 						);
 					} else {
