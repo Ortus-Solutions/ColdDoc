@@ -8,7 +8,7 @@
 
 		writeTemplate(
 			path			= currentDir & "/package-summary.html",
-			template		= "#variables.TEMPLATE_PATH#/package-summary.cfm",
+			template		= "#getThemePath()#/package-summary.cfm",
 			projectTitle 	= this.getProjectTitle(),
 			package 		= package,
 			qClasses 		= qClasses,
@@ -17,7 +17,7 @@
 
 		writeTemplate(
 			path			= currentDir & "/package-frame.html",
-			template		= "#variables.TEMPLATE_PATH#/package-frame.cfm",
+			template		= "#getThemePath()#/package-frame.cfm",
 			projectTitle 	= this.getProjectTitle(),
 			package 		= package,
 			qClasses 		= qClasses,

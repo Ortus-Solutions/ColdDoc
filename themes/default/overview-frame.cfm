@@ -27,8 +27,7 @@
 <head>
 	<title>	overview </title>
 	<meta name="keywords" content="overview">
-	<cfmodule template="inc/common.cfm" rootPath="">
-	<link rel="stylesheet" href="jstree/themes/default/style.min.css" />
+    <cfinclude template="#args.themePath#/inc/common.cfm" />
 </head>
 
 <body>

@@ -4,8 +4,7 @@
 <html lang="en">
 <head>
 	<title> #arguments.package# </title>
-	<meta name="keywords" content="#arguments.package# package">
-	<cfmodule template="inc/common.cfm" rootPath="#assetPath#">
+    <cfinclude template="#args.themePath#/inc/common.cfm" />
 </head>
 <body>
 	

@@ -4,19 +4,7 @@
 <html lang="en">
 <head>
 	<title>#arguments.name#</title>
-	<meta name="keywords" content="#arguments.package#.concurrent.Callable interface">
-	<!-- common assets -->
-	<cfmodule template="inc/common.cfm" rootPath="#instance.class.root#">
-	<!-- syntax highlighter -->
-	<link type="text/css" rel="stylesheet" href="#instance.class.root#highlighter/styles/shCoreDefault.css">
-	<script src="#instance.class.root#highlighter/scripts/shCore.js"></script>
-	<script src="#instance.class.root#highlighter/scripts/shBrushColdFusion.js"></script>
-	<script src="#instance.class.root#highlighter/scripts/shBrushXml.js"></script>
-	<script src="#instance.class.root#highlighter/scripts/shBrushSql.js"></script>
-	<script src="#instance.class.root#highlighter/scripts/shBrushJScript.js"></script>
-	<script src="#instance.class.root#highlighter/scripts/shBrushJava.js"></script>
-	<script src="#instance.class.root#highlighter/scripts/shBrushCss.js"></script>
-	<script type="text/javascript">SyntaxHighlighter.all();</script>
+    <cfinclude template="#args.themePath#/inc/common.cfm" />
 </head>
 
 <body class="withNavbar">

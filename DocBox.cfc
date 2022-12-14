@@ -47,6 +47,19 @@ component accessors="true" {
 	property name="loggingEnabled" type="boolean" default="false";
 
 	/**
+	 * Set the HTML or other output theme.
+	 * 
+	 * Stored as a struct with keys 'name' and 'opts':
+	 * {
+	 * 	"name" : "Shades of Purple",
+	 * 	"opts" : {
+	 * 		"show_search" : false
+	 * 	}
+	 * }
+	 */
+	property name="theme" type="struct";
+
+	/**
 	 * The strategy to use for document generation. Must extend docbox.strategy.AbstractTemplateStrategy
 	 */
 	property
@@ -199,6 +212,16 @@ component accessors="true" {
 		return this;
 	}
 
+	DocBox function htmlOutput( required string outputDir ){
+		setOutputDir( arguments.outputDir );
+		return this;
+	}
+
+	DocBox function theme( required string name, struct opts = {} ){
+		setTheme( { "name" : arguments.name, "opts" : arguments.opts } );
+		return this;
+	}
+
 	/**
 	 * Fluent-style method to kick off a new documentation run.
 	 */
@@ -213,6 +236,8 @@ component accessors="true" {
 
 		getStrategies().each( function( strategy ){
 			param strategy.properties.outputDir = getOutputDir();
+			strategy.properties.theme = getTheme();
+			// writeDump( strategy.properties );abort;
 			if ( isSimpleValue( strategy.strategy ) ){
 				new "#strategy.strategy#"( argumentCollection = strategy.properties ).run( metadata );
 			} else {
@@ -375,7 +400,7 @@ component accessors="true" {
 					if ( getThrowOnError() ){
 						throw(
 							type         = "InvalidComponentException",
-							message      = e.message,
+							message      = "Error documenting component #packagePath#.#cfcName#: #e.message#",
 							detail       = e.detail,
 							extendedInfo = serializeJSON( e )
 						);

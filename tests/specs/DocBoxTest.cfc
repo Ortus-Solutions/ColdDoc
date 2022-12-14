@@ -24,6 +24,7 @@ component extends="testbox.system.BaseSpec" labels="core" {
 					.src( expandPath( "/tests/specs" ) )
 					.exclude( "coldbox" )
 					.exclude( "build")
+					.exclude( "FunkyComponent" )
 					.outputDir( variables.HTMLOutputDir )
 					.withFileLogging()
 					.throwOnError()
@@ -35,6 +36,22 @@ component extends="testbox.system.BaseSpec" labels="core" {
 					// } )
 					.run();
 			} );
+			it( "supports HTML themeing", function(){
+				new Docbox()
+					.src( expandPath( "/docbox" ), "docbox" )
+					.exclude( "coldbox" )
+					.exclude( "testbox" )
+					.exclude( "build")
+					.exclude( ".engine" )
+					.exclude( "FunkyComponent" )
+					.withFileLogging()
+					.throwOnError()
+					.htmlOutput( variables.HTMLOutputDir )
+						.theme( "default", {
+							title : "DocBox"
+						} )
+					.run();
+			} );
 		})
 		describe( "DocBox Traditional", function(){
 			beforeEach( function(){
@@ -42,12 +59,13 @@ component extends="testbox.system.BaseSpec" labels="core" {
 				resetTmpDirectory( variables.HTMLOutputDir );
 				resetTmpDirectory( variables.JSONOutputDir );
 
+				variables.docbox = new docbox.DocBox();
+			} );
+			afterEach(function(){
 				if ( fileExists( expandPath( "/tests/FunkyComponent.cfc" ) ) ){
 					fileDelete( expandPath( "/tests/FunkyComponent.cfc" ) );
 				}
-
-				variables.docbox = new docbox.DocBox();
-			} );
+			});
 
 			it( "Works with single strategy", function(){
 				variables.docbox

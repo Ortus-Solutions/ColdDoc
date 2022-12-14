@@ -19,14 +19,22 @@ component extends="docbox.strategy.AbstractTemplateStrategy" accessors="true" {
 		type   ="string";
 
 	/**
-	 * Where HTML templates are stored
+	 * Set the HTML output theme.
+	 * 
+	 * Stored as a struct with keys 'name' and 'opts':
+	 * {
+	 * 	"name" : "Shades of Purple",
+	 * 	"opts" : {
+	 * 		"show_search" : false
+	 * 	}
+	 * }
 	 */
-	variables.TEMPLATE_PATH = "/docbox/strategy/api/resources/templates";
+	property name="theme" type="struct";
 
 	/**
-	 * Static assets used in HTML templates
+	 * Where HTML templates are stored
 	 */
-	variables.ASSETS_PATH   = "/docbox/strategy/api/resources/static";
+	variables.THEME_PATH = "/docbox/themes";
 
 	/**
 	 * Constructor
@@ -35,12 +43,17 @@ component extends="docbox.strategy.AbstractTemplateStrategy" accessors="true" {
 	 */
 	HTMLAPIStrategy function init(
 		required outputDir,
-		string projectTitle = "Untitled"
+		string projectTitle = "Untitled",
+		struct theme = {
+			"name" : "default",
+			"opts" : {}
+		}
 	){
 		super.init();
 
 		variables.outputDir    = arguments.outputDir;
 		variables.projectTitle = arguments.projectTitle;
+		variables.theme        = arguments.theme;
 
 		return this;
 	}
@@ -61,15 +74,23 @@ component extends="docbox.strategy.AbstractTemplateStrategy" accessors="true" {
 		}
 		// copy over the static assets
 		directoryCopy(
-			expandPath( variables.ASSETS_PATH ),
+			expandPath( getThemeAssetsPath() ),
 			getOutputDir(),
 			true
 		);
 
+		// Generate json source data for Alpine/HTML-based templates
+		var jsonSourceDirectory = getOutputDir() & "/data/";
+		ensureDirectory( jsonSourceDirectory );
+		new docbox.strategy.json.JSONAPIStrategy(
+			outputDir = jsonSourceDirectory,
+			projectTitle = getProjectTitle()
+		).run( arguments.qMetadata );
+
 		// write the index template
 		var args = {
 			path         : getOutputDir() & "/index.html",
-			template     : "#variables.TEMPLATE_PATH#/index.cfm",
+			template     : "#getThemePath()#/index.cfm",
 			projectTitle : getProjectTitle()
 		};
 		writeTemplate( argumentCollection = args )
@@ -94,7 +115,7 @@ component extends="docbox.strategy.AbstractTemplateStrategy" accessors="true" {
 		var qInterfaces = 0;
 
 		// done this way as ACF compat. Does not support writeoutput with query grouping.
-		include "#variables.TEMPLATE_PATH#/packagePages.cfm";
+		include "#getThemePath()#/packagePages.cfm";
 
 		return this;
 	}
@@ -137,7 +158,7 @@ component extends="docbox.strategy.AbstractTemplateStrategy" accessors="true" {
 			// write it out
 			writeTemplate(
 				path          = currentDir & "/#thisRow.name#.html",
-				template      = "#variables.TEMPLATE_PATH#/class.cfm",
+				template      = "#getThemePath()#/class.cfm",
 				projectTitle  = variables.projectTitle,
 				package       = thisRow.package,
 				name          = thisRow.name,
@@ -169,7 +190,7 @@ component extends="docbox.strategy.AbstractTemplateStrategy" accessors="true" {
 		// overview summary
 		writeTemplate(
 			path         = getOutputDir() & "/overview-summary.html",
-			template     = "#variables.TEMPLATE_PATH#/overview-summary.cfm",
+			template     = "#getThemePath()#/overview-summary.cfm",
 			projectTitle = getProjectTitle(),
 			qPackages    = qPackages
 		);
@@ -177,7 +198,7 @@ component extends="docbox.strategy.AbstractTemplateStrategy" accessors="true" {
 		// overview frame
 		writeTemplate(
 			path         = getOutputDir() & "/overview-frame.html",
-			template     = "#variables.TEMPLATE_PATH#/overview-frame.cfm",
+			template     = "#getThemePath()#/overview-frame.cfm",
 			projectTitle = getProjectTitle(),
 			qMetadata    = arguments.qMetadata
 		);
@@ -197,11 +218,30 @@ component extends="docbox.strategy.AbstractTemplateStrategy" accessors="true" {
 
 		writeTemplate(
 			path      = getOutputDir() & "/allclasses-frame.html",
-			template  = "#variables.TEMPLATE_PATH#/allclasses-frame.cfm",
+			template  = "#getThemePath()#/allclasses-frame.cfm",
 			qMetaData = arguments.qMetaData
 		);
 
 		return this;
 	}
 
+
+	/**
+	 * Get the full path to the set theme.
+	 */
+	private string function getThemePath(){
+		return "#variables.THEME_PATH#/#getTheme().name#";
+	}
+
+
+
+	/**
+	 * Static assets used in HTML templates.
+	 * 
+	 * By default these are stored in the theme's static/ directory.
+	 * This could potentially be configurable in the future.
+	 */
+	private string function getThemeAssetsPath(){
+		return getThemePath() & "/static/";
+	}
 }
