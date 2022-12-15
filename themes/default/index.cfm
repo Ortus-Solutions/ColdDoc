@@ -2,7 +2,7 @@
 
 <!-- main package overview -->
 <div class="border mx-10 my-8 px-2" x-data="{}">
-    <h2 class="text-xl bg-gray-200 px-5 -mx-2.5">Package Overview</h2>
+    <h2 class="font-bold text-xl bg-gray-200 p-4 -mx-2.5">Package Overview</h2>
     <ul class="p-2">
         <template x-for="package in $store.sortedPackages()">
             <li>

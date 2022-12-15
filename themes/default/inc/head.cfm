@@ -10,6 +10,7 @@
 <body class="p-0">
     <div
         class="flex min-h-screen"
+        x-data="{}"
     >
         <cfinclude template="#args.themePath#/inc/search.cfm" />
 
