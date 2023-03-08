@@ -88,12 +88,13 @@ component extends="docbox.strategy.AbstractTemplateStrategy" accessors="true" {
 		).run( arguments.qMetadata );
 
 		// write the index template
-		var args = {
+		writeTemplate( 
 			path         : getOutputDir() & "/index.html",
 			template     : "#getThemePath()#/index.cfm",
-			projectTitle : getProjectTitle()
-		};
-		writeTemplate( argumentCollection = args )
+			args = {
+				projectTitle : getProjectTitle()
+			}
+		)
 			// Write overview summary and frame
 			.writeOverviewSummaryAndFrame( arguments.qMetaData )
 			// Write classes frame
@@ -159,13 +160,15 @@ component extends="docbox.strategy.AbstractTemplateStrategy" accessors="true" {
 			writeTemplate(
 				path          = currentDir & "/#thisRow.name#.html",
 				template      = "#getThemePath()#/class.cfm",
-				projectTitle  = variables.projectTitle,
-				package       = thisRow.package,
-				name          = thisRow.name,
-				qSubClass     = qSubClass,
-				qImplementing = qImplementing,
-				qMetadata     = qMetaData,
-				metadata      = safeMeta
+				args          = {
+					projectTitle  = variables.projectTitle,
+					package       = thisRow.package,
+					name          = thisRow.name,
+					qSubClass     = qSubClass,
+					qImplementing = qImplementing,
+					qMetadata     = qMetaData,
+					metadata      = safeMeta
+				}
 			);
 		}
 
@@ -191,16 +194,20 @@ component extends="docbox.strategy.AbstractTemplateStrategy" accessors="true" {
 		writeTemplate(
 			path         = getOutputDir() & "/overview-summary.html",
 			template     = "#getThemePath()#/overview-summary.cfm",
-			projectTitle = getProjectTitle(),
-			qPackages    = qPackages
+			args         = {
+				projectTitle = getProjectTitle(),
+				qPackages    = qPackages
+			}
 		);
 
 		// overview frame
 		writeTemplate(
 			path         = getOutputDir() & "/overview-frame.html",
 			template     = "#getThemePath()#/overview-frame.cfm",
-			projectTitle = getProjectTitle(),
-			qMetadata    = arguments.qMetadata
+			args         = {
+				projectTitle = getProjectTitle(),
+				qMetadata    = arguments.qMetadata
+			}
 		);
 
 		return this;
@@ -219,12 +226,26 @@ component extends="docbox.strategy.AbstractTemplateStrategy" accessors="true" {
 		writeTemplate(
 			path      = getOutputDir() & "/allclasses-frame.html",
 			template  = "#getThemePath()#/allclasses-frame.cfm",
-			qMetaData = arguments.qMetaData
+			args      = {
+				qMetaData = arguments.qMetaData
+			}
 		);
 
 		return this;
 	}
 
+	package AbstractTemplateStrategy function writeTemplate(
+		required string path,
+		required string template,
+		struct args = {}
+	){
+		var filename = listFirst( arguments.path, "." );
+		arguments.args.theme = getTheme();
+		arguments.args.themePath = getThemePath();
+		arguments.args.theme.rootPath = "/" & reReplace( getOutputDir(), expandPath( "/" ), "" ) & "/";
+
+		return super.writeTemplate( argumentCollection = arguments );
+	}
 
 	/**
 	 * Get the full path to the set theme.

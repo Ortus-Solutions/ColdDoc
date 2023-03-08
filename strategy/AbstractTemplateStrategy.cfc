@@ -451,38 +451,21 @@ component doc_abstract="true" accessors="true" {
 	 * Builds a template
 	 * @path Where to write the template
 	 * @template The template to write out
+	 * @args Template argument data
 	 */
-	private AbstractTemplateStrategy function writeTemplate(
+	package AbstractTemplateStrategy function writeTemplate(
 		required string path,
-		required string template
+		required string template,
+		struct args = {}
 	){
 		savecontent variable="local.html" {
-			local.args = getTemplateArgs( argumentCollection = arguments );
+			local.args = arguments.args;
 			include "#arguments.template#";
 		}
 		// writeDump( variables.dataFile );//abort;
 		fileWrite( arguments.path, local.html );
 
 		return this;
-	}
-
-	/**
-	 * Build a struct of data arguments for use in template rendering.
-	 */
-	package function getTemplateArgs(
-		required string path,
-		required string template
-	){
-		var args = {};
-		var filename = listFirst( arguments.path, "." );
-		args.theme = getTheme();
-		args.themePath = getThemePath();
-		args.theme.rootPath = "/" & reReplace( getOutputDir(), expandPath( "/" ), "" ) & "/";
-
-		// pass to .js scripts so they know which .json file to pull in.
-		args.dataFile = reReplace( filename, getOutputDir(), "data" ) & ".json";
-		// writeDump( var = args.dataFile, output = "console" );
-		return args;
 	}
 
 	// Recursive function to output data
