@@ -106,7 +106,40 @@ component extends="testbox.system.BaseSpec" labels="strategy" {
 				var fileContents = fileRead( testFile );
 
 				expect( fileContents ).toInclude( "<code>#chr(10)#testHTML( 'foo' )#chr(10)#</code>" );
-			})
+			});
+
+			it( "can do default theme", function() {
+				new Docbox()
+					.src( expandPath( "/docbox" ), "docbox" )
+					.exclude( "coldbox" )
+					.exclude( "testbox" )
+					.exclude( "build")
+					.exclude( ".engine" )
+					.exclude( "FunkyComponent" )
+					.withFileLogging()
+					.throwOnError()
+					.htmlOutput( variables.testOutputDir )
+						.withTheme( "default", {
+							title : "DocBox"
+						} )
+					.run();
+			});
+			it( "can do classic theme", function() {
+				new Docbox()
+					.src( expandPath( "/docbox" ), "docbox" )
+					.exclude( "coldbox" )
+					.exclude( "testbox" )
+					.exclude( "build")
+					.exclude( ".engine" )
+					.exclude( "FunkyComponent" )
+					.withFileLogging()
+					.throwOnError()
+					.htmlOutput( variables.testOutputDir )
+						.withTheme( "classic", {
+							title : "DocBox"
+						} )
+					.run();
+			});
 		} );
 	}
 
