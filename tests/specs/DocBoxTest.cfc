@@ -28,7 +28,7 @@ component extends="testbox.system.BaseSpec" labels="core" {
 					.outputDir( variables.HTMLOutputDir )
 					.withFileLogging()
 					.throwOnError()
-					// .theme( "ninja", {
+					// .withTheme( "ninja", {
 					// 	footer : "",
 					// 	logo : "",
 					// 	title : "",
@@ -47,7 +47,7 @@ component extends="testbox.system.BaseSpec" labels="core" {
 					.withFileLogging()
 					.throwOnError()
 					.htmlOutput( variables.HTMLOutputDir )
-						.theme( "default", {
+						.withTheme( "default", {
 							title : "DocBox"
 						} )
 					.run();

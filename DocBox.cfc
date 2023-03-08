@@ -217,7 +217,7 @@ component accessors="true" {
 		return this;
 	}
 
-	DocBox function theme( required string name, struct opts = {} ){
+	DocBox function withTheme( required string name, struct opts = {} ){
 		setTheme( { "name" : arguments.name, "opts" : arguments.opts } );
 		return this;
 	}

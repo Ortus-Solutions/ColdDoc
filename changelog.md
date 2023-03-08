@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ----
 
+## 4.0.0
+
+### Added
+
+* Fluent builder-style syntax for documentation config
+* New `.withFileLogging()` for debugging component inclusion/exclusion into generated docs
+
+### Changed
+
+* The default HTML theme now uses Tailwind and Alpine
+
 ## 3.0.0
 
 ### Added
