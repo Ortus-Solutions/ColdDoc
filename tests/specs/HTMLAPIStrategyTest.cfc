@@ -140,6 +140,22 @@ component extends="testbox.system.BaseSpec" labels="strategy" {
 						} )
 					.run();
 			});
+			it( "can do modern theme", function() {
+				new Docbox()
+					.src( expandPath( "/docbox" ), "docbox" )
+					.exclude( "coldbox" )
+					.exclude( "testbox" )
+					.exclude( "build")
+					.exclude( ".engine" )
+					.exclude( "FunkyComponent" )
+					.withFileLogging()
+					.throwOnError()
+					.htmlOutput( variables.testOutputDir )
+						.withTheme( "modern", {
+							title : "DocBox"
+						} )
+					.run();
+			});
 		} );
 	}
 
