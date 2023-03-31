@@ -17,7 +17,7 @@
 			<a class="navbar-brand" href="#"><strong><cfoutput>#attributes.projecttitle#</cfoutput></strong></a>
 		</div>
 
-	    <div class="collapse navbar-collapse" id="class-navigation">
+	    <div class="bg-light border-1 border-info collapse navbar-collapse p-2 rounded shadow-lg show" id="class-navigation">
 	    	<ul class="nav navbar-nav">
 				<cfif attributes.page eq "overview">
 					<li class="active nav-item"><a href="#" class="nav-link"><i class="glyphicon glyphicon-plane"></i> overview</a></li>
