@@ -7,7 +7,7 @@
 <a name="navbar_top"></a>
 <a href="#skip-navbar_top" title="skip navigation links"></a>	
 
-<nav class="navbar navbar-expand-sm fixed-top" role="navigation" data-bs-theme="dark">
+<nav class="navbar navbar-expand-sm fixed-top bg-light border-1 border-info p-2 rounded shadow-lg " role="navigation" data-bs-theme="dark" id="navigation">
 	<div class="container-fluid">
     
 		<div class="navbar-brand">
@@ -17,7 +17,7 @@
 			<a class="navbar-brand" href="#"><strong><cfoutput>#attributes.projecttitle#</cfoutput></strong></a>
 		</div>
 
-	    <div class="bg-light border-1 border-info collapse navbar-collapse p-2 rounded shadow-lg show" id="class-navigation">
+	    <div class="collapse navbar-collapse show" id="class-navigation">
 	    	<ul class="nav navbar-nav">
 				<cfif attributes.page eq "overview">
 					<li class="active nav-item"><a href="#" class="nav-link"><i class="glyphicon glyphicon-plane"></i> overview</a></li>
@@ -61,7 +61,17 @@
 	    </div>
 
 	</div>
-</nav>	
+</nav>
+<div id="navspacer"></div>
+<script>
+document.addEventListener("DOMContentLoaded", function(event) {
+	let spacer = document.getElementById("navspacer");
+	let nav = document.getElementById( "navigation" );
+
+    spacer.style.paddingTop = nav.offsetHeight + "px";
+});
+	
+</script>
 
 <a name="skip-navbar_top"></a>
 <!-- ========= END OF NAVBAR ========= -->

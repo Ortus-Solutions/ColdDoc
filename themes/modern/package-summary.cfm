@@ -7,7 +7,7 @@
 	<meta name="keywords" content="#arguments.package# package">
 	<cfmodule template="inc/common.cfm" rootPath="#assetPath#">
 </head>
-<body class="pt-5">
+<body class="pt-4">
 
 	<cfmodule template="inc/nav.cfm"
 				page="Package"
